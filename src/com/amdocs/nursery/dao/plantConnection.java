@@ -9,8 +9,8 @@ public class plantConnection {
 	public Connection getConnection() {
 		con=null;
 		 try {
-			 Class.forName("oracle.jdbc.driver.OracleDriver"); //registration
-			 con=DriverManager.getConnection("Jdbc:Oracle:thin:@LAPTOP-UE18S6SM:1521:XE","system","admin"); //connection
+			 Class.forName("oracle.jdbc.driver.OracleDriver"); //registering the driver class
+			 con=DriverManager.getConnection("Jdbc:Oracle:thin:@LAPTOP-UE18S6SM:1521:XE","system","admin"); //create connection
 		 }catch(Exception e) {
 			 e.printStackTrace();
 		 }

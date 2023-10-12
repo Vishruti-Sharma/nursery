@@ -14,7 +14,7 @@ public class plantDao {
 	Connection con=pc.getConnection();
 	
 
-	public int addPlant(Plant p) {
+	public int addPlant(Plant p) throws SQLException {
 		int count=0;
 		try {
 			pst=con.prepareStatement("insert into plants values(plantId_seq.nextval,?,?,?,?,?,?)");
@@ -38,11 +38,12 @@ public class plantDao {
 			count = pst.executeUpdate();
 			return count;
 			
+			
 		}catch(Exception e) {
-			System.out.println("error add"+e.getMessage());
+			System.out.println(e);
 			
 		}
-		
+		con.close();
 		return 0;
 		
 	}
@@ -54,14 +55,15 @@ public class plantDao {
 			pst.setInt(1, delPlantId);
 			count=pst.executeUpdate();
 //			System.out.println("Deleted! ");
-					
+			con.close();		
 		}catch(Exception e) {
 			System.out.println("error delete"+e.getMessage());
 		}
 		return count;
+		
 	}
 	
-	public boolean updatePlantCost(int plantId, double updatedCost) throws plantInputException {
+	public boolean updatePlantCost(int plantId, double updatedCost) throws plantInputException, SQLException {
 		int count=0;
 		try {
 			pst=con.prepareStatement("update plants set pcost=? where plantId=?");
@@ -69,19 +71,20 @@ public class plantDao {
 			pst.setInt(2, plantId);
 			count=pst.executeUpdate();//rows update
 			if(count==0) {
-				throw new plantInputException("Plant not found");
+				throw new plantInputException("Plant with ID "+plantId+" not found!!\n");
 			}
 			System.out.println("Updated! ");
 			
-		}catch(Exception e) {
-			System.out.println("error update"+e.getMessage());
+		}catch(plantInputException e) {
+			System.out.println(e);
 			
 		}
+		con.close();
 		return true;
 		
 	}
 	
-	public List<Plant> showAllPlants(){
+	public List<Plant> showAllPlants() throws SQLException{
 		List<Plant> plist=new ArrayList<Plant>();
 		try {
 			pst=con.prepareStatement("select * from plants");
@@ -103,24 +106,26 @@ public class plantDao {
 				double cost=count.getDouble(7);
 				Plant p=new Plant(id,name,country,isSunlight,waterSupplyFrequency,type,cost);
 				plist.add(p);
+				if(plist.isEmpty()) {
+					throw new plantInputException("table is empty!!\n");
+				}
 			}
-		}catch(Exception e) {
-			System.out.println("error showallplants"+e.getMessage());
-			
+		}catch(plantInputException e) {
+			System.out.println("error show all plants  "+e.getMessage());
+//			e.printStackTrace();
 		}
+		con.close();
 		return plist;
 		
 	}
 	
-	public List<Plant> searchByOriginCountryName(String CountryName) throws plantInputException {
+	public List<Plant> searchByOriginCountryName(String CountryName) throws plantInputException, SQLException {
 		List<Plant> plist=new ArrayList<Plant>();
 		try {
 			pst=con.prepareStatement("select * from plants where originCountryName=?");
 			pst.setString(1, CountryName);
 			ResultSet rs=pst.executeQuery();
-			if(rs.next()==false) {
-				throw new plantInputException("country name not found");
-			}
+			
 			while(rs.next()) {
 				int id=rs.getInt(1);
 				String plantName=rs.getString(2);
@@ -145,20 +150,25 @@ public class plantDao {
 				
 				
 			}
+			if(plist.isEmpty()) {
+				throw new plantInputException("country name not found");
 			}
-		catch(Exception e) {
-			System.out.println("error origin country name "+e.getMessage());
+			
+			}
+		catch(plantInputException e) {
+			System.out.println(e);
+//			e.printStackTrace();
 		}
-		
+		con.close();
 		return plist;
 		
 	}
 	
-	public List<Plant> searchOutdoorPlantsWithSunlight(){
+public List<Plant> searchOutdoorPlantsWithSunlight(){
 		
 		List<Plant> plist=new ArrayList<Plant>();
 		try {
-			pst=con.prepareStatement("select * from plants where plantType='outdoor' and sunlightRequired='true'");
+			pst=con.prepareStatement("select * from plants where plantType='outdoor' and sunlightRequired='Y'");
 			
 			ResultSet count=pst.executeQuery();
 			while(count.next()) {
@@ -179,10 +189,15 @@ public class plantDao {
 				Plant p=new Plant(id,name,country,isSunlight,waterSupplyFrequency,type,cost);
 				plist.add(p);
 			}
+			if(plist.isEmpty()) {
+				throw new plantInputException("country name not found");
+			}
+			con.close();
 		}catch(Exception e) {
-			System.out.println("error showallplants"+e.getMessage());
+			System.out.println(e);
 			
 		}
+		
 		return plist;
 		
 	}
@@ -197,10 +212,11 @@ public class plantDao {
 			rs.next();
 			count = rs.getInt(1);
 			System.out.println("Counted! ");
-					
+			con.close();		
 		}catch(Exception e) {
 			System.out.println("error count"+e.getMessage());
 		}
+		
 		return count;
 		
 	}

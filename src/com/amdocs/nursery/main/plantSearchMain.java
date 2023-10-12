@@ -25,7 +25,7 @@ public class plantSearchMain {
 		  boolean sunlightRequired=sc.nextBoolean();
 		  System.out.println("Add new plant water supply frequency(daily/weekly/alternateDays)");
 		  String waterSupplyFrequency=sc.next();
-		  System.out.println("Add new plant type");
+		  System.out.println("Add new plant type(indoor/outdoor)");
 		  String plantType=sc.next();
 		  System.out.println("Add new plant cost");
 		  double cost=sc.nextDouble();
@@ -37,7 +37,7 @@ public class plantSearchMain {
 		  System.out.println("Plant Added Successfullyy");
 		}
 		catch(Exception e) {
-			System.out.println("enter correct values\n");
+			System.out.println("Please enter the correct values\n");
 //			try {
 //				//sc.next();
 //				throw new plantInputException("Please enter the String");
@@ -68,7 +68,7 @@ public class plantSearchMain {
 		  
 	}
 	
-	private static void updatePlantCost() throws plantInputException {
+	private static void updatePlantCost() throws plantInputException, SQLException {
 		plantDao dao=new plantDao();
 		Scanner sc=new Scanner(System.in);
 		System.out.println("Enter the Plant ID for the plant whose details have to be updated:");
@@ -79,7 +79,7 @@ public class plantSearchMain {
 		dao.updatePlantCost(plantId, updatedCost);
 	}
 	
-	private static void showAllPlants() {
+	private static void showAllPlants() throws SQLException {
 		plantDao dao=new plantDao();
 		Scanner sc=new Scanner(System.in);
 		List <Plant> plist=new ArrayList<Plant>();
@@ -88,14 +88,17 @@ public class plantSearchMain {
 
 	}
 	
-	private static void searchByOriginCountryName() throws plantInputException {
+	private static void searchByOriginCountryName() throws plantInputException, SQLException {
 		plantDao dao=new plantDao();
 		Scanner sc=new Scanner(System.in);
 		List <Plant> plist=new ArrayList<Plant>();
 		System.out.println("Enter the country name for the plant whose details you want");
 		String originCountryName = sc.next();
 		plist=dao.searchByOriginCountryName(originCountryName);
-		System.out.println(plist);
+		if(!plist.isEmpty()) {
+			System.out.println(plist);
+		}
+		
 	}
 	
 	private static void searchOutdoorPlantsWithSunlight() {
@@ -111,16 +114,25 @@ public class plantSearchMain {
 		Scanner sc=new Scanner(System.in);
 		System.out.println("enter for what water supply frequency you want to count plants(daily/weekly/alternatDays)");
 		String waterFrequency=sc.next();
-		
-		System.out.println(dao.countPlantsByWaterSupplyFrequency(waterFrequency));
+		int x=dao.countPlantsByWaterSupplyFrequency(waterFrequency);
+		if(x==0) {
+			try {
+			throw new plantInputException("number of entries for given water supply frequency is zero");
+			}catch(plantInputException e) {
+				System.out.println(e);
+				
+			}
+		}
+		System.out.println(x+" entry/entries \n");
 	}
 	
-	public static void main(String args[])throws plantInputException {
+	public static void main(String args[])throws plantInputException, SQLException {
 		int choice=0;
 		plantDao dao=new plantDao();
 		System.out.println("Enter your choice:");
 		Scanner sc=new Scanner(System.in);
 		while(true) {
+			System.out.println("=========================================================================================");
 		System.out.println("1. Add new plant\n"
 				+ "2. Delete plant\n"
 				+ "3. Update plant cost\n"
@@ -130,6 +142,8 @@ public class plantSearchMain {
 				+ "7. Count plants by water supply frequency\n"
 				+ "8. Exit\n"
 				);
+		System.out.println("=========================================================================================");
+		System.out.println("your choice-> ");
 		choice =sc.nextInt();
 		switch(choice) {
 		  case 1:
